@@ -31,8 +31,6 @@ var RootCmd = &cobra.Command{
 	Short: "Mini SSH Server for tests",
 	Long: `This is a mini SSH Server for Tests
 `,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		server.Sshd()
 	},
@@ -50,7 +48,6 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gotestsshd.yaml)")
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
