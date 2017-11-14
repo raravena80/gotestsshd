@@ -26,6 +26,7 @@ import (
 
 var cfgFile string
 
+// RootCmd Main root command
 var RootCmd = &cobra.Command{
 	Use:   "gotestsshd",
 	Short: "Mini SSH Server for tests",
@@ -36,6 +37,7 @@ var RootCmd = &cobra.Command{
 	},
 }
 
+// Execute Main function that start the excution of the root command
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)

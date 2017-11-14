@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// Package server Main package implementation for the SSH server
 package server
 
 import (
@@ -23,6 +25,7 @@ import (
 	"regexp"
 )
 
+// StartServer Function that start the server using public keys for auth
 func StartServer(publicKeys map[string]ssh.PublicKey) {
 	sshHandler := func(s glssh.Session) {
 		authorizedKey := ssh.MarshalAuthorizedKey(s.PublicKey())
@@ -57,6 +60,7 @@ func StartServer(publicKeys map[string]ssh.PublicKey) {
 	panic(glssh.ListenAndServe(":2224", sshHandler, publicKeyOption))
 }
 
+// Sshd Function that begins the server intantiation
 func Sshd() {
 	var (
 		testPrivateKeys map[string]interface{}
