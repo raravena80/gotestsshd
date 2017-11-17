@@ -28,10 +28,6 @@ import (
 // StartServer Function that start the server using public keys for auth
 func StartServer(publicKeys map[string]ssh.PublicKey) {
 	sshHandler := func(s glssh.Session) {
-		authorizedKey := ssh.MarshalAuthorizedKey(s.PublicKey())
-		io.WriteString(s, fmt.Sprintf("public key used by %s:\n", s.User()))
-		s.Write(authorizedKey)
-		io.WriteString(s, fmt.Sprintf("Command used %s:\n", s.Command()))
 		// Handle scp
 		rp := regexp.MustCompile("scp")
 		if rp.MatchString(s.Command()[0]) {
@@ -45,6 +41,7 @@ func StartServer(publicKeys map[string]ssh.PublicKey) {
 				io.Copy(f, s) // stdin
 			}()
 		}
+		s.Exit(0)
 	}
 
 	publicKeyOption := glssh.PublicKeyAuth(func(ctx glssh.Context, key glssh.PublicKey) bool {
