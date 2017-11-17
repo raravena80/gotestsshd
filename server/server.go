@@ -37,9 +37,7 @@ func StartServer(publicKeys map[string]ssh.PublicKey) {
 			if err != nil {
 				panic(err)
 			}
-			go func() {
-				io.Copy(f, s) // stdin
-			}()
+			io.Copy(f, s) // stdin
 		}
 		s.Exit(0)
 	}
