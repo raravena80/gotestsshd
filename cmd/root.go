@@ -24,7 +24,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile string
+	port    int
+)
 
 // RootCmd Main root command
 var RootCmd = &cobra.Command{
@@ -33,7 +36,7 @@ var RootCmd = &cobra.Command{
 	Long: `This is a mini SSH Server for Tests
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		server.Sshd()
+		server.Sshd(port)
 	},
 }
 
@@ -48,6 +51,8 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gotestsshd.yaml)")
+	RootCmd.Flags().IntVarP(&port, "port", "p", 2224, "Port to bind server on")
+	viper.BindPFlag("gotestsshd.port", RootCmd.Flags().Lookup("port"))
 }
 
 func initConfig() {

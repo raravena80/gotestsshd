@@ -26,7 +26,7 @@ import (
 )
 
 // StartServer Function that start the server using public keys for auth
-func StartServer(publicKeys map[string]ssh.PublicKey) {
+func StartServer(publicKeys map[string]ssh.PublicKey, port int) {
 	sshHandler := func(s glssh.Session) {
 		// Handle scp
 		rp := regexp.MustCompile("scp")
@@ -53,12 +53,12 @@ func StartServer(publicKeys map[string]ssh.PublicKey) {
 		return false // use glssh.KeysEqual() to compare against known keys
 	})
 
-	fmt.Println("starting ssh server for scp tests on port 2224...")
+	fmt.Println("starting ssh server for scp tests on port", port, "...")
 	panic(glssh.ListenAndServe(":2224", sshHandler, publicKeyOption))
 }
 
 // Sshd Function that begins the server intantiation
-func Sshd() {
+func Sshd(port int) {
 	var (
 		testPrivateKeys map[string]interface{}
 		testSigners     map[string]ssh.Signer
@@ -81,5 +81,5 @@ func Sshd() {
 		}
 		testPublicKeys[t] = testSigners[t].PublicKey()
 	}
-	StartServer(testPublicKeys)
+	StartServer(testPublicKeys, port)
 }
