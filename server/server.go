@@ -38,8 +38,10 @@ func StartServer(publicKeys map[string]ssh.PublicKey) {
 				panic(err)
 			}
 			io.Copy(f, s) // stdin
+			f.Close()
+			s.Close()
+			err = cmd.Wait()
 		}
-		s.Exit(0)
 	}
 
 	publicKeyOption := glssh.PublicKeyAuth(func(ctx glssh.Context, key glssh.PublicKey) bool {
