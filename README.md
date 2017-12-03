@@ -4,7 +4,7 @@
 
 ## Usage
 ```
-This is a mini SSH Server for Tests
+This is a mini SSH server for tests
 
 Usage:
   gotestsshd [flags]
