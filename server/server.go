@@ -23,15 +23,59 @@ import (
 	"io"
 	"os/exec"
 	"regexp"
+	"sync/atomic"
+)
+
+// Failure mode configuration
+var (
+	failMode   string
+	failAfter  int32
+	connectionCount int32
 )
 
 // StartServer Function that start the server using public keys for auth
-func StartServer(publicKeys map[string]ssh.PublicKey, port int) {
+func StartServer(publicKeys map[string]ssh.PublicKey, port int, failMode string, failAfter int32) {
+	// Store fail mode globally for the session handler
+	failMode = failMode
+	connectionCount = 0
+	if failAfter > 0 {
+		atomic.StoreInt32(&failAfter, failAfter)
+	}
+
 	sshHandler := func(s glssh.Session) {
+		connNum := atomic.AddInt32(&connectionCount, 1)
+
+		// Check if we should fail at session creation
+		if failMode == "session" {
+			// Fail after specified number of connections
+			currentFailAfter := atomic.LoadInt32(&failAfter)
+			if currentFailAfter > 0 && connNum > currentFailAfter {
+				s.Close()
+				return
+			}
+		}
+
 		// Handle scp
 		rp := regexp.MustCompile("scp")
 		if rp.MatchString(s.Command()[0]) {
+			// Check if we should fail at pipe creation
+			if failMode == "pipe" {
+				currentFailAfter := atomic.LoadInt32(&failAfter)
+				if currentFailAfter > 0 && connNum > currentFailAfter {
+					return
+				}
+			}
+
 			cmd := exec.Command(s.Command()[0], s.Command()[1:]...)
+
+			// Check if we should fail at command start
+			if failMode == "start" {
+				currentFailAfter := atomic.LoadInt32(&failAfter)
+				if currentFailAfter > 0 && connNum > currentFailAfter {
+					return
+				}
+			}
+
 			f, _ := cmd.StdinPipe()
 			err := cmd.Start()
 			if err != nil {
@@ -54,11 +98,14 @@ func StartServer(publicKeys map[string]ssh.PublicKey, port int) {
 	})
 
 	fmt.Println("starting ssh server for scp tests on port", port, "...")
+	if failMode != "" {
+		fmt.Println("FAIL MODE:", failMode)
+	}
 	panic(glssh.ListenAndServe(":2224", sshHandler, publicKeyOption))
 }
 
 // Sshd Function that begins the server intantiation
-func Sshd(port int) {
+func Sshd(port int, failMode string, failAfter int32) {
 	var (
 		testPrivateKeys map[string]interface{}
 		testSigners     map[string]ssh.Signer
@@ -81,5 +128,5 @@ func Sshd(port int) {
 		}
 		testPublicKeys[t] = testSigners[t].PublicKey()
 	}
-	StartServer(testPublicKeys, port)
+	StartServer(testPublicKeys, port, failMode, failAfter)
 }

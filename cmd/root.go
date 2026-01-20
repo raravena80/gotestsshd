@@ -25,8 +25,10 @@ import (
 )
 
 var (
-	cfgFile string
-	port    int
+	cfgFile     string
+	port        int
+	failMode     string
+	failAfter    int
 )
 
 // RootCmd Main root command
@@ -36,7 +38,7 @@ var RootCmd = &cobra.Command{
 	Long: `This is a mini SSH Server for Tests
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		server.Sshd(port)
+		server.Sshd(port, failMode, int32(failAfter))
 	},
 }
 
@@ -53,6 +55,8 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gotestsshd.yaml)")
 	RootCmd.Flags().IntVarP(&port, "port", "p", 2224, "Port to bind server on")
 	viper.BindPFlag("gotestsshd.port", RootCmd.Flags().Lookup("port"))
+	RootCmd.Flags().StringVar(&failMode, "fail-mode", "", "Failure mode: 'session', 'pipe', 'start', or 'none' (default)")
+	RootCmd.Flags().IntVar(&failAfter, "fail-after", 0, "Number of connections to accept before failing (0 = fail immediately)")
 }
 
 func initConfig() {
